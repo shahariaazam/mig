@@ -3,6 +3,7 @@ package engine
 import (
 	"errors"
 	"github.com/shahariaazam/mig/pkg/message"
+	"github.com/stretchr/testify/assert"
 	"io"
 	"io/ioutil"
 	"log"
@@ -49,7 +50,6 @@ func (s *Session) Data(r io.Reader) error {
 	if b, err := ioutil.ReadAll(r); err != nil {
 		return err
 	} else {
-		log.Println("Data:", string(b))
 		s.backend.receivedData = string(b)
 	}
 	return nil
@@ -101,15 +101,21 @@ func TestSend(t *testing.T) {
 	}
 
 	err = smtpClient.Send(msg)
-	if err != nil {
-		t.Errorf("Failed to send email. Error: %v", err)
-	}
+	assert.NoError(t, err)
 
 	// Get the received data from the backend
 	receivedData := backend.GetReceivedData()
 
-	expectedData := "To: \"Jane Smith\" <janesmith@example.com>\r\nSubject: Test Email\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: quoted-printable\r\nFrom: \"John Doe\" <johndoe@example.com>\r\n\r\nThis is a test email\r\n"
-	if expectedData != receivedData {
-		t.Errorf("Data not expected")
+	m, err := mail.ReadMessage(strings.NewReader(receivedData))
+	if err != nil {
+		panic(err)
 	}
+
+	assert.Equal(t, "text/plain; charset=utf-8", m.Header.Get("Content-Type"))
+	assert.Equal(t, "quoted-printable", m.Header.Get("Content-Transfer-Encoding"))
+	assert.Equal(t, "\"John Doe\" <johndoe@example.com>", m.Header.Get("From"))
+	assert.Equal(t, "\"Jane Smith\" <janesmith@example.com>", m.Header.Get("To"))
+	assert.Equal(t, "1.0", m.Header.Get("MIME-Version"))
+	body, err := ioutil.ReadAll(m.Body)
+	assert.Equal(t, "This is a test email\r\n", string(body))
 }
