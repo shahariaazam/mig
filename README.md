@@ -1,5 +1,9 @@
 MIG - Mailer in Go
 -----------
+
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/shahariaazam/mig/Go)](https://github.com/shahariaazam/mig/actions)
+[![codecov](https://codecov.io/gh/shahariaazam/mig/branch/master/graph/badge.svg?token=R7SSKTFXQ1)](https://codecov.io/gh/shahariaazam/mig)
+
 MIG is a Go library that enables you to send emails using various mail providers, including SMTP. It aims to make sending emails easy and intuitive, with a clean API and clear documentation.
 
 ## Installation
