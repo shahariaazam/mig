@@ -39,3 +39,10 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.out
           flags: unittests
+
+      - name: Go lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.42.1
+          config: .golangci.yml
+          timeout: 5m
