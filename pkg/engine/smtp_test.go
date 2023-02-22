@@ -15,14 +15,18 @@ import (
 )
 
 // The Backend implements SMTP server methods.
-type Backend struct{}
+type Backend struct {
+	receivedData string
+}
 
 func (bkd *Backend) NewSession(_ *smtp.Conn) (smtp.Session, error) {
-	return &Session{}, nil
+	return &Session{backend: bkd}, nil
 }
 
 // A Session is returned after EHLO.
-type Session struct{}
+type Session struct {
+	backend *Backend
+}
 
 func (s *Session) AuthPlain(username, password string) error {
 	if username != "username" || password != "password" {
@@ -46,6 +50,7 @@ func (s *Session) Data(r io.Reader) error {
 		return err
 	} else {
 		log.Println("Data:", string(b))
+		s.backend.receivedData = string(b)
 	}
 	return nil
 }
@@ -54,6 +59,10 @@ func (s *Session) Reset() {}
 
 func (s *Session) Logout() error {
 	return nil
+}
+
+func (bkd *Backend) GetReceivedData() string {
+	return bkd.receivedData
 }
 
 func TestSend(t *testing.T) {
@@ -94,5 +103,13 @@ func TestSend(t *testing.T) {
 	err = smtpClient.Send(msg)
 	if err != nil {
 		t.Errorf("Failed to send email. Error: %v", err)
+	}
+
+	// Get the received data from the backend
+	receivedData := backend.GetReceivedData()
+
+	expectedData := "To: \"Jane Smith\" <janesmith@example.com>\r\nSubject: Test Email\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: quoted-printable\r\nFrom: \"John Doe\" <johndoe@example.com>\r\n\r\nThis is a test email\r\n"
+	if expectedData != receivedData {
+		t.Errorf("Data not expected")
 	}
 }
