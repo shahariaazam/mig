@@ -1,9 +1,6 @@
+MIG - Mailer in Go
+-----------
 MIG is a Go library that enables you to send emails using various mail providers, including SMTP. It aims to make sending emails easy and intuitive, with a clean API and clear documentation.
-
-Features
---------
-
--   Send emails using various mail providers, including SMTP.
 
 ## Installation
 
